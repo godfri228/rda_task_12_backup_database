@@ -1,16 +1,15 @@
 #!/bin/bash
 
-# DB_USER і DB_PASSWORD беремо зі змінних середовища
-if [ -z "$DB_USER" ] || [ -z "$DB_PASSWORD" ]; then
-  echo "Set DB_USER and DB_PASSWORD" >&2
-  exit 1
-fi
+DB_HOST="127.0.0.1"
+DB_PORT="3306"
 
-set -e -o pipefail
+mysqldump -h "$DB_HOST" -P "$DB_PORT" --protocol=TCP \
+  -u "$DB_USER" -p"$DB_PASSWORD" --no-tablespaces ShopDB \
+  | mysql -h "$DB_HOST" -P "$DB_PORT" --protocol=TCP \
+  -u "$DB_USER" -p"$DB_PASSWORD" ShopDBReserve
 
-mysqldump -u "$DB_USER" -p"$DB_PASSWORD" --no-tablespaces ShopDB \
-  | mysql -u "$DB_USER" -p"$DB_PASSWORD" ShopDBReserve
-
-mysqldump -u "$DB_USER" -p"$DB_PASSWORD" --no-tablespaces \
+mysqldump -h "$DB_HOST" -P "$DB_PORT" --protocol=TCP \
+  -u "$DB_USER" -p"$DB_PASSWORD" --no-tablespaces \
   --no-create-info --skip-triggers ShopDB \
-  | mysql -u "$DB_USER" -p"$DB_PASSWORD" ShopDBDevelopment
+  | mysql -h "$DB_HOST" -P "$DB_PORT" --protocol=TCP \
+  -u "$DB_USER" -p"$DB_PASSWORD" ShopDBDevelopment
